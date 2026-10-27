@@ -20,7 +20,8 @@ public class ClientHandler extends Thread {
         this.server = server;
         this.socket = socket;
         this.id = id;
-        in = new BufferedReader(new InputStreamReader(socket.getInputStream(), StandardCharsets.UTF_8));
+        socket.setTcpNoDelay(true);   // ส่งทันที ไม่รอรวมข้อความ (ลดอาการกระตุก)
+        in =new BufferedReader(new InputStreamReader(socket.getInputStream(), StandardCharsets.UTF_8));
         out = new PrintWriter(new OutputStreamWriter(socket.getOutputStream(), StandardCharsets.UTF_8), true);
     }
 

@@ -20,6 +20,7 @@ public class GameOverPanel extends JPanel implements ActionListener {
     int[] playerNo;     // ใช้เลือกรูป/สีของผู้เล่น (index 0-3)
     int[] scores;
 
+    JButton againButton = UI.button("เล่นอีกครั้ง", UI.GOLD, Color.BLACK);
     JButton backButton = UI.button("กลับไปหน้าหลัก", UI.CRIMSON, Color.WHITE);
 
     public GameOverPanel(MainFrame frame, GameClient client) {
@@ -78,7 +79,12 @@ public class GameOverPanel extends JPanel implements ActionListener {
         winner.setBounds(0, 415, MainFrame.WIDTH, 30);
         add(winner);
 
-        backButton.setBounds(330, 460, 240, 50);
+        // 2 ปุ่มเรียงกัน: เล่นอีกครั้ง (ซ้าย) / กลับหน้าหลัก (ขวา)
+        againButton.setBounds(200, 460, 240, 50);
+        add(againButton);
+        againButton.addActionListener(this);
+
+        backButton.setBounds(460, 460, 240, 50);
         add(backButton);
         backButton.addActionListener(this);
     }
@@ -131,6 +137,13 @@ public class GameOverPanel extends JPanel implements ActionListener {
 
     @Override
     public void actionPerformed(ActionEvent e) {
+        if (e.getSource() == againButton) {
+            // กลับห้องรอเดิม การเชื่อมต่อยังอยู่ ไม่ต้องกรอก IP ใหม่
+            WaitingPanel page = new WaitingPanel(frame, client);
+            client.waitingPage = page;
+            frame.showPage(page);
+            return;
+        }
         if (e.getSource() == backButton) {
             client.close();   // ออกจากห้อง (เจ้าของห้องจะปิด Server ด้วย)
             frame.showPage(new MenuPanel(frame));

@@ -16,7 +16,7 @@ public class GamePanel extends JPanel implements KeyListener {
     int barHeight = 50;   // ความสูงแถบคะแนนด้านบน
 
     // ปุ่มที่กดค้างอยู่ (PlayerMover อ่านค่าพวกนี้)
-    boolean up, down, left, right;
+    volatile boolean up, down, left, right;
 
     public GamePanel(MainFrame frame, GameClient client) {
         this.frame = frame;

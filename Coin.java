@@ -7,6 +7,7 @@ public class Coin {
 
     int x, y;
     int size = 24;
+    long hiddenUntil = 0;   // ฝั่งผู้เล่น: ซ่อนเหรียญที่เราเพิ่งเดินชน ระหว่างรอ Server ตอบ (เหรียญไม่ค้าง)
     Random random = new Random();
 
     // สุ่มตำแหน่งใหม่บนแผนที่
@@ -16,6 +17,7 @@ public class Coin {
     }
 
     public void draw(Graphics g, int offsetY, ImageObserver observer) {
+        if (System.currentTimeMillis() < hiddenUntil) return;
         g.drawImage(UI.COIN, x, offsetY + y, size, size, observer);
     }
 

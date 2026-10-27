@@ -8,6 +8,7 @@ public class Player {
 
     int id;              // 0-3 (ใช้เลือกรูป/สี)
     int x, y;            // ตำแหน่งบนแผนที่ (ไม่รวมแถบคะแนนด้านบน)
+    int targetX, targetY;   // ตำแหน่งล่าสุดที่ Server บอก (ใช้กับผู้เล่นคนอื่น)
     int size = 40;
     int score = 0;
     boolean joined = false;   // เข้าห้องแล้วหรือยัง
@@ -35,6 +36,14 @@ public class Player {
         if (y < 0) y = 0;
         if (x > GameServer.MAP_W - size) x = GameServer.MAP_W - size;
         if (y > GameServer.MAP_H - size) y = GameServer.MAP_H - size;
+    }
+
+    // ค่อยๆ เลื่อนไปหาตำแหน่งเป้าหมาย ทีละ 1/3 ของระยะที่เหลือ (ภาพเพื่อนไม่กระโดด)
+    public void smoothMove() {
+        x += (targetX - x) / 3;
+        y += (targetY - y) / 3;
+        if (Math.abs(targetX - x) < 3) x = targetX;
+        if (Math.abs(targetY - y) < 3) y = targetY;
     }
 
     // วาดตัวละคร + ป้ายชื่อเหนือหัว (offsetY = ความสูงแถบคะแนน)

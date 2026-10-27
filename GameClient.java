@@ -26,13 +26,15 @@ public class GameClient extends Thread {
     Player[] players = new Player[4];
     Coin[] coins = new Coin[GameServer.COIN_COUNT];
     int timeLeft = GameServer.GAME_TIME;
-    boolean playing = false;
-    boolean finished = false;   // จบเกม/ออกจากห้องแล้ว
+    // volatile = หลาย Thread อ่าน/เขียนตัวแปรนี้ ให้ทุก Thread เห็นค่าล่าสุดเสมอ
+    volatile boolean playing = false;
+    volatile boolean finished = false;   // ออกจากห้องแล้ว
     WaitingPanel waitingPage;   // หน้าห้องรอที่เปิดอยู่ (ไว้สั่งอัปเดตรายชื่อ)
 
     public GameClient(MainFrame frame, String ip) throws IOException {
         this.frame = frame;
         socket = new Socket(ip, GameServer.PORT);   // ต่อไปหา Server (ต่อไม่ได้จะ throw)
+        socket.setTcpNoDelay(true);   // ส่งทันที ไม่รอรวมข้อความ (ลดอาการกระตุก)
         in = new BufferedReader(new InputStreamReader(socket.getInputStream(), StandardCharsets.UTF_8));
         out = new PrintWriter(new OutputStreamWriter(socket.getOutputStream(), StandardCharsets.UTF_8), true);
         for (int i = 0; i < 4; i++) players[i] = new Player(i);
@@ -77,15 +79,23 @@ public class GameClient extends Thread {
             refreshWaiting();
         } else if (cmd.equals("POS")) {
             int i = Integer.parseInt(part[1]);
+            int px = Integer.parseInt(part[2]);
+            int py = Integer.parseInt(part[3]);
             // ตัวเราเองขยับในเครื่องเราอยู่แล้ว ระหว่างเล่นไม่ต้องรับตำแหน่งตัวเองกลับมา
             if (i != myId || !playing) {
-                players[i].x = Integer.parseInt(part[2]);
-                players[i].y = Integer.parseInt(part[3]);
+                // ระหว่างเล่น: ตั้งเป้าหมาย แล้วให้ PlayerMover ค่อยๆ เลื่อนไปหา (ภาพลื่น)
+                players[i].targetX = px;
+                players[i].targetY = py;
+                if (!playing) {      // ก่อนเริ่มเกม: วางตำแหน่งทันที
+                    players[i].x = px;
+                    players[i].y = py;
+                }
             }
         } else if (cmd.equals("COIN")) {
             int i = Integer.parseInt(part[1]);
             coins[i].x = Integer.parseInt(part[2]);
             coins[i].y = Integer.parseInt(part[3]);
+            coins[i].hiddenUntil = 0;   // ได้ตำแหน่งใหม่จาก Server แล้ว แสดงได้
         } else if (cmd.equals("SCORE")) {
             players[Integer.parseInt(part[1])].score = Integer.parseInt(part[2]);
         } else if (cmd.equals("TIME")) {
@@ -100,8 +110,7 @@ public class GameClient extends Thread {
                 }
             });
         } else if (cmd.equals("OVER")) {
-            playing = false;
-            finished = true;
+            playing = false;   // ยังอยู่ในห้อง (ไม่ตัดการเชื่อมต่อ) เผื่อกด "เล่นอีกครั้ง"
             SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
                     frame.showPage(new GameOverPanel(frame, GameClient.this));

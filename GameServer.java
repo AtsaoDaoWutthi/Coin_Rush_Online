@@ -129,6 +129,9 @@ public class GameServer extends Thread {
     synchronized void endGame() {
         playing = false;
         broadcast("OVER");
+        // ทุกคนยังอยู่ในห้อง แต่ต้องกด "พร้อม" ใหม่ก่อนเริ่มรอบต่อไป
+        for (int i = 1; i < 4; i++) players[i].ready = false;
+        broadcastPlayers();
     }
 
     // ส่งสถานะในห้องรอ: เข้าแล้ว/พร้อม ของทั้ง 4 ช่อง (1 = ใช่, 0 = ไม่)

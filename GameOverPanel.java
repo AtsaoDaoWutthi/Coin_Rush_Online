@@ -13,17 +13,20 @@ import javax.swing.JPanel;
 public class GameOverPanel extends JPanel implements ActionListener {
 
     MainFrame frame;
+    GameClient client;
 
-    // ===== ข้อมูลตัวอย่าง (เรียงจากคะแนนมากไปน้อยแล้ว) =====
-    String[] names  = { "P3", "P1", "P2", "P4" };
-    int[] playerNo  = { 2, 0, 1, 3 };     // ใช้เลือกรูป/สีของผู้เล่น (index 0-3)
-    int[] scores    = { 12, 10, 8, 6 };
+    // ===== ผลจริงจาก client (เรียงจากคะแนนมากไปน้อย ใน constructor) =====
+    String[] names;
+    int[] playerNo;     // ใช้เลือกรูป/สีของผู้เล่น (index 0-3)
+    int[] scores;
 
     JButton backButton = UI.button("กลับไปหน้าหลัก", UI.CRIMSON, Color.WHITE);
 
-    public GameOverPanel(MainFrame frame) {
+    public GameOverPanel(MainFrame frame, GameClient client) {
         this.frame = frame;
+        this.client = client;
         setLayout(null);
+        sortResult();
 
         JLabel title = new JLabel("จบเกม!", JLabel.CENTER);
         title.setFont(UI.TITLE);
@@ -80,6 +83,36 @@ public class GameOverPanel extends JPanel implements ActionListener {
         backButton.addActionListener(this);
     }
 
+    // เอาเฉพาะคนที่อยู่ในห้อง แล้วเรียงคะแนนมากไปน้อย (Selection sort)
+    private void sortResult() {
+        int n = 0;
+        for (int i = 0; i < 4; i++) {
+            if (client.players[i].joined) n++;
+        }
+        names = new String[n];
+        playerNo = new int[n];
+        scores = new int[n];
+        int k = 0;
+        for (int i = 0; i < 4; i++) {
+            Player p = client.players[i];
+            if (p.joined) {
+                names[k] = p.getName();
+                playerNo[k] = i;
+                scores[k] = p.score;
+                k++;
+            }
+        }
+        for (int i = 0; i < n - 1; i++) {
+            int best = i;
+            for (int j = i + 1; j < n; j++) {
+                if (scores[j] > scores[best]) best = j;
+            }
+            String tn = names[i];  names[i] = names[best];  names[best] = tn;
+            int tp = playerNo[i];  playerNo[i] = playerNo[best];  playerNo[best] = tp;
+            int ts = scores[i];    scores[i] = scores[best];  scores[best] = ts;
+        }
+    }
+
     // ตัวช่วยใส่ข้อความหัวตาราง
     private void addCell(JPanel row, String text, int x) {
         JLabel l = UI.label(text, new Font("Tahoma", Font.BOLD, 16));
@@ -99,6 +132,7 @@ public class GameOverPanel extends JPanel implements ActionListener {
     @Override
     public void actionPerformed(ActionEvent e) {
         if (e.getSource() == backButton) {
+            client.close();   // ออกจากห้อง (เจ้าของห้องจะปิด Server ด้วย)
             frame.showPage(new MenuPanel(frame));
         }
     }

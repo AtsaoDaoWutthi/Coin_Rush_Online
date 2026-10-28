@@ -1,8 +1,14 @@
 import java.awt.Color;
+import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.net.Inet4Address;
+import java.net.InetAddress;
+import java.net.NetworkInterface;
+import java.net.SocketException;
+import java.util.Enumeration;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JLabel;
@@ -42,6 +48,18 @@ public class WaitingPanel extends JPanel implements ActionListener {
 
         countLabel.setBounds(620, 30, 150, 40);
         add(countLabel);
+
+        // IP ห้อง (เหมือนเลขห้อง): เจ้าของห้องเห็น IP ของเครื่องตัวเอง / เพื่อนเห็น IP ที่กรอกเข้ามา
+        String ipText;
+        if (client.server != null) {
+            ipText = "IP ห้อง : " + myIpList() + "   (Port " + GameServer.PORT + ")";
+        } else {
+            ipText = "IP ห้อง : " + client.ip;
+        }
+        JLabel ipLabel = UI.label(ipText, new Font("Tahoma", Font.PLAIN, 15));
+        ipLabel.setForeground(UI.GOLD);
+        ipLabel.setBounds(150, 68, 620, 26);
+        add(ipLabel);
 
         // รายชื่อผู้เล่น 4 แถว
         for (int i = 0; i < 4; i++) {
@@ -121,6 +139,39 @@ public class WaitingPanel extends JPanel implements ActionListener {
         } else {
             startButton.setEnabled(false);   // ยังไม่ได้เลขผู้เล่นจาก Server
         }
+    }
+
+    // รวม IP ของเครื่องนี้ (IPv4 ทุกการ์ดเครือข่ายที่เปิดอยู่ ยกเว้น 127.0.0.1) เอา Radmin (26.x) ขึ้นก่อน
+    // เช่น "26.86.139.23 (Radmin), 192.168.1.5 (Wi-Fi)"
+    private String myIpList() {
+        String radmin = "", others = "";
+        try {
+            Enumeration<NetworkInterface> cards = NetworkInterface.getNetworkInterfaces();
+            while (cards.hasMoreElements()) {
+                NetworkInterface card = cards.nextElement();
+                if (!card.isUp() || card.isLoopback()) continue;
+                String name = card.getDisplayName().toLowerCase();
+                String tag = "";
+                if (name.contains("radmin")) tag = " (Radmin)";
+                else if (name.contains("wi-fi") || name.contains("wireless") || name.contains("wlan")) tag = " (Wi-Fi)";
+
+                Enumeration<InetAddress> addrs = card.getInetAddresses();
+                while (addrs.hasMoreElements()) {
+                    InetAddress a = addrs.nextElement();
+                    if (!(a instanceof Inet4Address)) continue;   // เอาเฉพาะ IPv4 แบบ 192.168.1.5
+                    String one = a.getHostAddress() + tag;
+                    if (tag.equals(" (Radmin)") || a.getHostAddress().startsWith("26.")) {
+                        radmin += (radmin.isEmpty() ? "" : ", ") + one;
+                    } else {
+                        others += (others.isEmpty() ? "" : ", ") + one;
+                    }
+                }
+            }
+        } catch (SocketException e) {
+        }
+        String all = radmin;
+        if (!others.isEmpty()) all += (all.isEmpty() ? "" : ", ") + others;
+        return all.isEmpty() ? "ไม่พบ (ดูจาก ipconfig)" : all;
     }
 
     // พื้นหลังกำแพงหิน

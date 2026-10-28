@@ -15,6 +15,7 @@ public class GameClient extends Thread {
 
     MainFrame frame;
     Socket socket;
+    String ip;                  // IP ห้องที่ใช้ต่อเข้ามา (ไว้แสดงในห้องรอ)
     BufferedReader in;
     PrintWriter out;
     GameServer server;          // มีค่าเฉพาะเครื่องเจ้าของห้อง (ไว้ปิดห้องตอนออก)
@@ -33,6 +34,7 @@ public class GameClient extends Thread {
 
     public GameClient(MainFrame frame, String ip) throws IOException {
         this.frame = frame;
+        this.ip = ip;
         socket = new Socket(ip, GameServer.PORT);   // ต่อไปหา Server (ต่อไม่ได้จะ throw)
         socket.setTcpNoDelay(true);   // ส่งทันที ไม่รอรวมข้อความ (ลดอาการกระตุก)
         in = new BufferedReader(new InputStreamReader(socket.getInputStream(), StandardCharsets.UTF_8));

@@ -78,12 +78,10 @@ public class CreateRoomPanel extends JPanel implements ActionListener {
                 return;
             }
             server.start();
-            GameClient client = JoinRoomPanel.connect(frame, "127.0.0.1");
+            GameClient client = JoinRoomPanel.connect(frame, "127.0.0.1", server);
             if (client == null) {
                 server.close();
-                return;
             }
-            client.server = server;
         }
     }
 }

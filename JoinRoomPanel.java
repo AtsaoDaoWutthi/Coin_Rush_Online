@@ -63,13 +63,14 @@ public class JoinRoomPanel extends JPanel implements ActionListener {
             return;
         }
         if (e.getSource() == joinButton) {
-            connect(frame, ipField.getText().trim());
+            connect(frame, ipField.getText().trim(), null);
         }
     }
 
     // ต่อไปหา Server แล้วไปหน้าห้องรอ (ต่อไม่ได้คืนค่า null)
     // static: หน้า CreateRoomPanel ก็เรียกใช้ด้วย (เจ้าของห้องต่อเข้า 127.0.0.1 ของตัวเอง)
-    public static GameClient connect(MainFrame frame, String ip) {
+    // server = Server ของห้อง (เฉพาะเจ้าของห้อง), เพื่อนส่ง null
+    public static GameClient connect(MainFrame frame, String ip, GameServer server) {
         GameClient client;
         try {
             client = new GameClient(frame, ip);
@@ -77,6 +78,7 @@ public class JoinRoomPanel extends JPanel implements ActionListener {
             JOptionPane.showMessageDialog(frame, "เชื่อมต่อ " + ip + " ไม่ได้");
             return null;
         }
+        client.server = server;   // ตั้งก่อนสร้างหน้าห้องรอ หน้าห้องรอจะได้รู้ว่าเป็นเจ้าของห้อง
         WaitingPanel page = new WaitingPanel(frame, client);
         client.waitingPage = page;
         frame.showPage(page);

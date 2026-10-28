@@ -9,13 +9,12 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 
-// หน้า 2 (Join): กรอก IP เครื่องเจ้าของห้อง แล้วเข้าร่วม
 public class JoinRoomPanel extends JPanel implements ActionListener {
 
     MainFrame frame;
 
     JButton backButton = UI.button("<", UI.WOOD_DARK, Color.WHITE);
-    JTextField ipField = new JTextField("127.0.0.1");   // IP เครื่องเจ้าของห้อง
+    JTextField ipField = new JTextField("127.0.0.1");
     JButton joinButton = UI.button("เข้าร่วม", UI.CRIMSON, Color.WHITE);
 
     public JoinRoomPanel(MainFrame frame) {
@@ -23,7 +22,6 @@ public class JoinRoomPanel extends JPanel implements ActionListener {
         setLayout(null);
         setBackground(UI.WOOD);
 
-        // ----- หัวหน้า -----
         backButton.setBounds(30, 25, 50, 40);
         add(backButton);
         backButton.addActionListener(this);
@@ -31,7 +29,6 @@ public class JoinRoomPanel extends JPanel implements ActionListener {
         header.setBounds(100, 25, 400, 40);
         add(header);
 
-        // ----- แถวพื้นเข้ม: IP + ปุ่มเข้าร่วม -----
         JPanel row = new JPanel(null);
         row.setBackground(UI.WOOD_DARK);
         row.setBounds(150, 220, 600, 50);
@@ -49,7 +46,6 @@ public class JoinRoomPanel extends JPanel implements ActionListener {
         add(row);
     }
 
-    // พื้นหลังกำแพงหิน
     @Override
     public void paintComponent(Graphics g) {
         super.paintComponent(g);
@@ -67,9 +63,6 @@ public class JoinRoomPanel extends JPanel implements ActionListener {
         }
     }
 
-    // ต่อไปหา Server แล้วไปหน้าห้องรอ (ต่อไม่ได้คืนค่า null)
-    // static: หน้า CreateRoomPanel ก็เรียกใช้ด้วย (เจ้าของห้องต่อเข้า 127.0.0.1 ของตัวเอง)
-    // server = Server ของห้อง (เฉพาะเจ้าของห้อง), เพื่อนส่ง null
     public static GameClient connect(MainFrame frame, String ip, GameServer server) {
         GameClient client;
         try {
@@ -78,11 +71,11 @@ public class JoinRoomPanel extends JPanel implements ActionListener {
             JOptionPane.showMessageDialog(frame, "เชื่อมต่อ " + ip + " ไม่ได้");
             return null;
         }
-        client.server = server;   // ตั้งก่อนสร้างหน้าห้องรอ หน้าห้องรอจะได้รู้ว่าเป็นเจ้าของห้อง
+        client.server = server;
         WaitingPanel page = new WaitingPanel(frame, client);
         client.waitingPage = page;
         frame.showPage(page);
-        client.start();   // เริ่ม Thread รับข้อมูลหลังสร้างหน้าแล้ว จะได้ไม่พลาดรายชื่อผู้เล่น
+        client.start();
         return client;
     }
 }

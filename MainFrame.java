@@ -1,7 +1,6 @@
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 
-// หน้าต่างเดียวของทั้งเกม ทุกหน้าเป็น JPanel ที่สลับเข้า-ออก
 public class MainFrame extends JFrame {
 
     public static final int WIDTH = 900;
@@ -10,21 +9,20 @@ public class MainFrame extends JFrame {
     public MainFrame() {
         setTitle("Coin Collector Online");
         setSize(WIDTH, HEIGHT);
-        setDefaultCloseOperation(EXIT_ON_CLOSE);   // กด x ปิดโปรแกรม
+        setDefaultCloseOperation(EXIT_ON_CLOSE);
         setResizable(false);
-        setLocationRelativeTo(null);               // เปิดกลางจอ
+        setLocationRelativeTo(null);
 
-        showPage(new MenuPanel(this));             // หน้าแรก = หน้าหลัก
+        showPage(new MenuPanel(this));
         setVisible(true);
     }
 
-    // เปลี่ยนหน้า: เอาหน้าเก่าออกทั้งหมด แล้วใส่หน้าใหม่
     public void showPage(JPanel page) {
-        getContentPane().removeAll();   // ลบหน้าเก่า
-        add(page);                      // ใส่หน้าใหม่
-        revalidate();                   // ให้ Java จัดวาง component ใหม่ (จำเป็นหลัง add/remove ตอนหน้าต่างเปิดอยู่)
-        repaint();                      // วาดจอใหม่
-        page.requestFocusInWindow();    // เผื่อหน้าไหนใช้คีย์บอร์ด
+        getContentPane().removeAll();
+        add(page);
+        revalidate();
+        repaint();
+        page.requestFocusInWindow();
     }
 
     public static void main(String[] args) {

@@ -8,35 +8,30 @@ import java.nio.charset.StandardCharsets;
 import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 
-// ฝั่งผู้เล่น (ทุกเครื่องมี รวมถึงเจ้าของห้องด้วย ซึ่งต่อเข้า 127.0.0.1 ของตัวเอง)
-// เป็น Thread คอยรับข้อความจาก Server ตลอดเวลา (เหมือน receiver ใน ChatClient บทที่ 8)
-// และเก็บข้อมูลเกมล่าสุดไว้ให้หน้าต่างๆ เอาไปวาด
 public class GameClient extends Thread {
 
     MainFrame frame;
     Socket socket;
-    String ip;                  // IP ห้องที่ใช้ต่อเข้ามา (ไว้แสดงในห้องรอ)
+    String ip;
     BufferedReader in;
     PrintWriter out;
-    GameServer server;          // มีค่าเฉพาะเครื่องเจ้าของห้อง (ไว้ปิดห้องตอนออก)
+    GameServer server;
 
-    // ===== ข้อมูลเกมที่ได้จาก Server =====
     int myId = -1;
     String roomName = "";
     int maxPlayers = 4;
     Player[] players = new Player[4];
     Coin[] coins = new Coin[GameServer.COIN_COUNT];
     int timeLeft = GameServer.GAME_TIME;
-    // volatile = หลาย Thread อ่าน/เขียนตัวแปรนี้ ให้ทุก Thread เห็นค่าล่าสุดเสมอ
     volatile boolean playing = false;
-    volatile boolean finished = false;   // ออกจากห้องแล้ว
-    WaitingPanel waitingPage;   // หน้าห้องรอที่เปิดอยู่ (ไว้สั่งอัปเดตรายชื่อ)
+    volatile boolean finished = false;
+    WaitingPanel waitingPage;
 
     public GameClient(MainFrame frame, String ip) throws IOException {
         this.frame = frame;
         this.ip = ip;
-        socket = new Socket(ip, GameServer.PORT);   // ต่อไปหา Server (ต่อไม่ได้จะ throw)
-        socket.setTcpNoDelay(true);   // ส่งทันที ไม่รอรวมข้อความ (ลดอาการกระตุก)
+        socket = new Socket(ip, GameServer.PORT);
+        socket.setTcpNoDelay(true);
         in = new BufferedReader(new InputStreamReader(socket.getInputStream(), StandardCharsets.UTF_8));
         out = new PrintWriter(new OutputStreamWriter(socket.getOutputStream(), StandardCharsets.UTF_8), true);
         for (int i = 0; i < 4; i++) players[i] = new Player(i);
@@ -54,9 +49,7 @@ public class GameClient extends Thread {
                 handle(line);
             }
         } catch (IOException e) {
-            // เราปิด socket เอง หรือสายหลุด
         }
-        // Server ปิด / สายหลุด ระหว่างอยู่ในห้องหรือในเกม -> กลับหน้าหลัก
         if (!finished) {
             finished = true;
             backToMenu("หลุดการเชื่อมต่อจากห้อง");
@@ -71,7 +64,7 @@ public class GameClient extends Thread {
             myId = Integer.parseInt(part[1]);
         } else if (cmd.equals("ROOM")) {
             maxPlayers = Integer.parseInt(part[1]);
-            roomName = line.substring(line.indexOf(' ', 5) + 1);   // ชื่อห้องอาจมีเว้นวรรค
+            roomName = line.substring(line.indexOf(' ', 5) + 1);
             refreshWaiting();
         } else if (cmd.equals("PLAYERS")) {
             for (int i = 0; i < 4; i++) {
@@ -83,12 +76,10 @@ public class GameClient extends Thread {
             int i = Integer.parseInt(part[1]);
             int px = Integer.parseInt(part[2]);
             int py = Integer.parseInt(part[3]);
-            // ตัวเราเองขยับในเครื่องเราอยู่แล้ว ระหว่างเล่นไม่ต้องรับตำแหน่งตัวเองกลับมา
             if (i != myId || !playing) {
-                // ระหว่างเล่น: ตั้งเป้าหมาย แล้วให้ PlayerMover ค่อยๆ เลื่อนไปหา (ภาพลื่น)
                 players[i].targetX = px;
                 players[i].targetY = py;
-                if (!playing) {      // ก่อนเริ่มเกม: วางตำแหน่งทันที
+                if (!playing) {
                     players[i].x = px;
                     players[i].y = py;
                 }
@@ -97,7 +88,7 @@ public class GameClient extends Thread {
             int i = Integer.parseInt(part[1]);
             coins[i].x = Integer.parseInt(part[2]);
             coins[i].y = Integer.parseInt(part[3]);
-            coins[i].hiddenUntil = 0;   // ได้ตำแหน่งใหม่จาก Server แล้ว แสดงได้
+            coins[i].hiddenUntil = 0;
         } else if (cmd.equals("SCORE")) {
             players[Integer.parseInt(part[1])].score = Integer.parseInt(part[2]);
         } else if (cmd.equals("TIME")) {
@@ -105,14 +96,13 @@ public class GameClient extends Thread {
         } else if (cmd.equals("START")) {
             playing = true;
             waitingPage = null;
-            // เปลี่ยนหน้าจอต้องทำใน Thread ของ Swing จึงใช้ invokeLater
             SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
                     frame.showPage(new GamePanel(frame, GameClient.this));
                 }
             });
         } else if (cmd.equals("OVER")) {
-            playing = false;   // ยังอยู่ในห้อง (ไม่ตัดการเชื่อมต่อ) เผื่อกด "เล่นอีกครั้ง"
+            playing = false;
             SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
                     frame.showPage(new GameOverPanel(frame, GameClient.this));
@@ -142,7 +132,6 @@ public class GameClient extends Thread {
         });
     }
 
-    // ออกจากห้อง (ถ้าเป็นเจ้าของห้อง ปิด Server ด้วย)
     public void close() {
         finished = true;
         try {

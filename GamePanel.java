@@ -5,24 +5,20 @@ import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import javax.swing.JPanel;
 
-// หน้า 4: ระหว่างเล่น (Gameplay)
-// กดลูกศร / WASD เดิน -> PlayerMover (Thread) ขยับตัวเรา ส่งตำแหน่งให้ Server แล้ววาดจอใหม่
-// ข้อมูลคนอื่น เหรียญ คะแนน เวลา มาจาก Server ผ่าน GameClient
 public class GamePanel extends JPanel implements KeyListener {
 
     MainFrame frame;
     GameClient client;
 
-    int barHeight = 50;   // ความสูงแถบคะแนนด้านบน
+    int barHeight = 50;
 
-    // ปุ่มที่กดค้างอยู่ (PlayerMover อ่านค่าพวกนี้)
     volatile boolean up, down, left, right;
 
     public GamePanel(MainFrame frame, GameClient client) {
         this.frame = frame;
         this.client = client;
         setLayout(null);
-        setFocusable(true);       // ให้รับคีย์บอร์ดได้
+        setFocusable(true);
         addKeyListener(this);
         new PlayerMover(this, client).start();
     }
@@ -31,20 +27,16 @@ public class GamePanel extends JPanel implements KeyListener {
     public void paintComponent(Graphics g) {
         super.paintComponent(g);
 
-        // 1) แผนที่ (ใต้แถบคะแนน)
         g.drawImage(UI.MAP, 0, barHeight, getWidth(), getHeight() - barHeight, this);
 
-        // 2) เหรียญ
         for (int i = 0; i < client.coins.length; i++) {
             client.coins[i].draw(g, barHeight, this);
         }
 
-        // 3) ผู้เล่น + ป้ายชื่อเหนือหัว
         for (int i = 0; i < client.players.length; i++) {
             client.players[i].draw(g, barHeight, this);
         }
 
-        // 4) แถบคะแนนด้านบน (วาดท้ายสุดให้อยู่บนสุด)
         g.setColor(UI.WOOD_DARK);
         g.fillRect(0, 0, getWidth(), barHeight);
         g.setFont(new Font("Tahoma", Font.BOLD, 20));
@@ -60,7 +52,6 @@ public class GamePanel extends JPanel implements KeyListener {
             g.drawString("" + p.score, x + 82, 32);
         }
 
-        // เวลา มุมขวาบน
         g.setColor(Color.WHITE);
         g.setFont(new Font("Tahoma", Font.PLAIN, 14));
         g.drawString("เวลา", getWidth() - 110, 22);
@@ -68,7 +59,6 @@ public class GamePanel extends JPanel implements KeyListener {
         g.drawString("" + client.timeLeft, getWidth() - 70, 40);
     }
 
-    // ===== คีย์บอร์ด: กด = true, ปล่อย = false =====
     @Override
     public void keyPressed(KeyEvent e) {
         setKey(e.getKeyCode(), true);

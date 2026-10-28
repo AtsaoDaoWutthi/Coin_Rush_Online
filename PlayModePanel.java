@@ -6,7 +6,6 @@ import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 
-// หน้าเลือกโหมด (กด "เริ่มเกม" ในหน้าหลักแล้วมาหน้านี้): สร้างห้อง หรือ เข้าร่วมห้อง
 public class PlayModePanel extends JPanel implements ActionListener {
 
     MainFrame frame;
@@ -38,7 +37,6 @@ public class PlayModePanel extends JPanel implements ActionListener {
         joinButton.addActionListener(this);
     }
 
-    // พื้นหลังกำแพงหิน
     @Override
     public void paintComponent(Graphics g) {
         super.paintComponent(g);

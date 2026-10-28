@@ -10,7 +10,6 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 
-// หน้า 2 (Host): สร้างห้อง -> เปิด Server ในเครื่องเรา
 public class CreateRoomPanel extends JPanel implements ActionListener {
 
     MainFrame frame;
@@ -25,7 +24,6 @@ public class CreateRoomPanel extends JPanel implements ActionListener {
         setLayout(null);
         setBackground(UI.WOOD);
 
-        // ----- หัวหน้า -----
         backButton.setBounds(30, 25, 50, 40);
         add(backButton);
         backButton.addActionListener(this);
@@ -33,7 +31,6 @@ public class CreateRoomPanel extends JPanel implements ActionListener {
         header.setBounds(100, 25, 400, 40);
         add(header);
 
-        // ----- ชื่อห้อง + จำนวนผู้เล่น -----
         JLabel nameLabel = UI.label("ชื่อห้อง :", UI.NORMAL);
         nameLabel.setBounds(200, 170, 150, 35);
         add(nameLabel);
@@ -45,7 +42,7 @@ public class CreateRoomPanel extends JPanel implements ActionListener {
         countLabel.setBounds(200, 225, 160, 35);
         add(countLabel);
         countBox.setFont(UI.NORMAL);
-        countBox.setSelectedIndex(2);   // ค่าเริ่ม = 4 คน
+        countBox.setSelectedIndex(2);
         countBox.setBounds(370, 225, 150, 35);
         add(countBox);
 
@@ -54,7 +51,6 @@ public class CreateRoomPanel extends JPanel implements ActionListener {
         createButton.addActionListener(this);
     }
 
-    // พื้นหลังกำแพงหิน
     @Override
     public void paintComponent(Graphics g) {
         super.paintComponent(g);
@@ -68,8 +64,7 @@ public class CreateRoomPanel extends JPanel implements ActionListener {
             return;
         }
         if (e.getSource() == createButton) {
-            // เปิด Server ในเครื่องเรา แล้วเราเองก็ต่อเข้าไปเป็นผู้เล่นคนแรก
-            int maxPlayers = countBox.getSelectedIndex() + 2;   // 0,1,2 -> 2,3,4 คน
+            int maxPlayers = countBox.getSelectedIndex() + 2;
             GameServer server;
             try {
                 server = new GameServer(nameField.getText(), maxPlayers);

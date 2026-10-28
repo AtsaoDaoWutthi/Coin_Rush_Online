@@ -6,8 +6,6 @@ import java.io.PrintWriter;
 import java.net.Socket;
 import java.nio.charset.StandardCharsets;
 
-// อยู่ฝั่ง Server: 1 ผู้เล่น = 1 ClientHandler = 1 Thread
-// คอยรับข้อความจากผู้เล่นคนนั้นตลอดเวลา (เหมือน Thread "คนเฝ้าประตู" ใน ChatServer)
 public class ClientHandler extends Thread {
 
     GameServer server;
@@ -20,8 +18,8 @@ public class ClientHandler extends Thread {
         this.server = server;
         this.socket = socket;
         this.id = id;
-        socket.setTcpNoDelay(true);   // ส่งทันที ไม่รอรวมข้อความ (ลดอาการกระตุก)
-        in =new BufferedReader(new InputStreamReader(socket.getInputStream(), StandardCharsets.UTF_8));
+        socket.setTcpNoDelay(true);
+        in = new BufferedReader(new InputStreamReader(socket.getInputStream(), StandardCharsets.UTF_8));
         out = new PrintWriter(new OutputStreamWriter(socket.getOutputStream(), StandardCharsets.UTF_8), true);
     }
 
@@ -32,11 +30,9 @@ public class ClientHandler extends Thread {
                 server.handle(id, line);
             }
         } catch (IOException e) {
-            // สายหลุด
         } catch (RuntimeException e) {
             System.out.println("ข้อความผิดรูปแบบจาก P" + (id + 1));
         }
-        // readLine() ได้ null หรือหลุด = ผู้เล่นออกจากห้อง
         server.removeClient(id);
         close();
     }

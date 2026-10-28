@@ -3,16 +3,15 @@ import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.image.ImageObserver;
 
-// ผู้เล่น 1 คน (คล้ายคลาส Ghost ใน Lab บทที่ 7: มีตำแหน่ง ขนาด และวาดตัวเองได้)
 public class Player {
 
-    int id;              // 0-3 (ใช้เลือกรูป/สี)
-    int x, y;            // ตำแหน่งบนแผนที่ (ไม่รวมแถบคะแนนด้านบน)
-    int targetX, targetY;   // ตำแหน่งล่าสุดที่ Server บอก (ใช้กับผู้เล่นคนอื่น)
+    int id;
+    int x, y;
+    int targetX, targetY;
     int size = 40;
     int score = 0;
-    boolean joined = false;   // เข้าห้องแล้วหรือยัง
-    boolean ready = false;    // กดพร้อมแล้วหรือยัง
+    boolean joined = false;
+    boolean ready = false;
 
     public Player(int id) {
         this.id = id;
@@ -22,7 +21,6 @@ public class Player {
         return "P" + (id + 1);
     }
 
-    // จุดเกิดของแต่ละคน (4 มุมแผนที่)
     public void moveToStart() {
         int[] startX = { 60, GameServer.MAP_W - 100, 60, GameServer.MAP_W - 100 };
         int[] startY = { 60, 60, GameServer.MAP_H - 100, GameServer.MAP_H - 100 };
@@ -30,7 +28,6 @@ public class Player {
         y = startY[id];
     }
 
-    // ไม่ให้เดินออกนอกแผนที่
     public void keepInMap() {
         if (x < 0) x = 0;
         if (y < 0) y = 0;
@@ -38,7 +35,6 @@ public class Player {
         if (y > GameServer.MAP_H - size) y = GameServer.MAP_H - size;
     }
 
-    // ค่อยๆ เลื่อนไปหาตำแหน่งเป้าหมาย ทีละ 1/3 ของระยะที่เหลือ (ภาพเพื่อนไม่กระโดด)
     public void smoothMove() {
         x += (targetX - x) / 3;
         y += (targetY - y) / 3;
@@ -46,7 +42,6 @@ public class Player {
         if (Math.abs(targetY - y) < 3) y = targetY;
     }
 
-    // วาดตัวละคร + ป้ายชื่อเหนือหัว (offsetY = ความสูงแถบคะแนน)
     public void draw(Graphics g, int offsetY, ImageObserver observer) {
         if (!joined) return;
         int drawY = offsetY + y;
